@@ -1,9 +1,21 @@
 package org.codinjutsu.tools.jenkins.view.action.results;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
+import org.codinjutsu.tools.jenkins.logic.RequestManager;
+import org.codinjutsu.tools.jenkins.model.Job;
+
 import com.google.common.base.Objects;
 import com.intellij.execution.PsiLocation;
 import com.intellij.execution.testframework.sm.runner.GeneralTestEventsProcessor;
-import com.intellij.execution.testframework.sm.runner.events.*;
+import com.intellij.execution.testframework.sm.runner.events.TestFailedEvent;
+import com.intellij.execution.testframework.sm.runner.events.TestFinishedEvent;
+import com.intellij.execution.testframework.sm.runner.events.TestIgnoredEvent;
+import com.intellij.execution.testframework.sm.runner.events.TestStartedEvent;
+import com.intellij.execution.testframework.sm.runner.events.TestSuiteFinishedEvent;
+import com.intellij.execution.testframework.sm.runner.events.TestSuiteStartedEvent;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.JavaPsiFacade;
 import com.intellij.psi.PsiClass;
@@ -13,12 +25,6 @@ import com.offbytwo.jenkins.model.TestCase;
 import com.offbytwo.jenkins.model.TestResult;
 import com.offbytwo.jenkins.model.TestSuites;
 import jetbrains.buildServer.messages.serviceMessages.TestFailed;
-import org.codinjutsu.tools.jenkins.logic.RequestManager;
-import org.codinjutsu.tools.jenkins.model.Job;
-
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
 
 class JobTestResultsHandler {
     private static final String CLASS_METHOD_SEPARATOR = ":::";
@@ -72,7 +78,10 @@ class JobTestResultsHandler {
         testEventsProcessor.onTestStarted(new TestStartedEvent(testCase.getName(), "file://" + testCase.getClassName() + CLASS_METHOD_SEPARATOR + testCase.getName()));
 
         if (testCase.isSkipped()) {
-            testEventsProcessor.onTestIgnored(new TestIgnoredEvent(testCase.getName(), Objects.firstNonNull(testCase.getErrorDetails(), ""), testCase.getErrorStackTrace()));
+            testEventsProcessor.onTestIgnored(
+                  new TestIgnoredEvent(testCase.getName(), Objects.firstNonNull(testCase.getErrorDetails(), "")
+                        , testCase.getErrorStackTrace())
+            );
         } else if (testCase.getErrorDetails() != null) {
             testEventsProcessor.onTestFailure(new TestFailedEvent(new MyTestFailed(testCase), true));
         }

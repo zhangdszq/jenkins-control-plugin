@@ -16,18 +16,21 @@
 
 package org.codinjutsu.tools.jenkins;
 
-import com.intellij.openapi.components.*;
-import com.intellij.openapi.project.Project;
-import com.intellij.util.xmlb.XmlSerializerUtil;
 import org.apache.commons.lang.StringUtils;
 import org.codinjutsu.tools.jenkins.model.Build;
 import org.codinjutsu.tools.jenkins.model.BuildStatusEnum;
 
+import com.intellij.openapi.components.PersistentStateComponent;
+import com.intellij.openapi.components.ServiceManager;
+import com.intellij.openapi.components.State;
+import com.intellij.openapi.components.Storage;
+import com.intellij.openapi.project.Project;
+import com.intellij.util.xmlb.XmlSerializerUtil;
+
 @State(
         name = "Jenkins.Application.Settings",
         storages = {
-                @Storage(id = "JenkinsAppSettings", file = "$PROJECT_FILE$"),
-                @Storage(file = "$PROJECT_CONFIG_DIR$/jenkinsSettings.xml", scheme = StorageScheme.DIRECTORY_BASED)
+                @Storage(value = "jenkinsSettings.xml")
         }
 )
 public class JenkinsAppSettings implements PersistentStateComponent<JenkinsAppSettings.State> {

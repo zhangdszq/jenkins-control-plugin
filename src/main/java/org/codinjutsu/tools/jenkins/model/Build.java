@@ -16,18 +16,19 @@
 
 package org.codinjutsu.tools.jenkins.model;
 
-import org.codinjutsu.tools.jenkins.util.DateUtil;
-import org.codinjutsu.tools.jenkins.util.GuiUtil;
-
-import javax.swing.*;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.swing.Icon;
+
+import org.codinjutsu.tools.jenkins.util.DateUtil;
+import org.codinjutsu.tools.jenkins.util.GuiUtil;
+
 public class Build {
 
-    public static final Map<BuildStatusEnum, Icon> ICON_BY_BUILD_STATUS_MAP = new HashMap<BuildStatusEnum, Icon>();
+    public static final Map<BuildStatusEnum, Icon> ICON_BY_BUILD_STATUS_MAP = new HashMap<>();
 
     private String url;
     private Date buildDate;

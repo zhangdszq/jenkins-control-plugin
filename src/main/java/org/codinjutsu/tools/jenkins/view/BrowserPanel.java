@@ -16,6 +16,59 @@
 
 package org.codinjutsu.tools.jenkins.view;
 
+import java.awt.BorderLayout;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+
+import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.TreeNode;
+
+import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
+import org.codinjutsu.tools.jenkins.JenkinsAppSettings;
+import org.codinjutsu.tools.jenkins.JenkinsSettings;
+import org.codinjutsu.tools.jenkins.JenkinsWindowManager;
+import org.codinjutsu.tools.jenkins.exception.ConfigurationException;
+import org.codinjutsu.tools.jenkins.logic.BuildStatusAggregator;
+import org.codinjutsu.tools.jenkins.logic.BuildStatusVisitor;
+import org.codinjutsu.tools.jenkins.logic.ExecutorService;
+import org.codinjutsu.tools.jenkins.logic.JenkinsLoadingTaskOption;
+import org.codinjutsu.tools.jenkins.logic.RequestManager;
+import org.codinjutsu.tools.jenkins.model.Build;
+import org.codinjutsu.tools.jenkins.model.BuildStatusEnum;
+import org.codinjutsu.tools.jenkins.model.FavoriteView;
+import org.codinjutsu.tools.jenkins.model.Jenkins;
+import org.codinjutsu.tools.jenkins.model.Job;
+import org.codinjutsu.tools.jenkins.model.View;
+import org.codinjutsu.tools.jenkins.util.GuiUtil;
+import org.codinjutsu.tools.jenkins.view.action.GotoBuildConsolePageAction;
+import org.codinjutsu.tools.jenkins.view.action.GotoBuildPageAction;
+import org.codinjutsu.tools.jenkins.view.action.GotoBuildTestResultsPageAction;
+import org.codinjutsu.tools.jenkins.view.action.GotoJobPageAction;
+import org.codinjutsu.tools.jenkins.view.action.GotoLastBuildPageAction;
+import org.codinjutsu.tools.jenkins.view.action.LoadBuildsAction;
+import org.codinjutsu.tools.jenkins.view.action.OpenPluginSettingsAction;
+import org.codinjutsu.tools.jenkins.view.action.RefreshNodeAction;
+import org.codinjutsu.tools.jenkins.view.action.RefreshRssAction;
+import org.codinjutsu.tools.jenkins.view.action.RunBuildAction;
+import org.codinjutsu.tools.jenkins.view.action.SelectViewAction;
+import org.codinjutsu.tools.jenkins.view.action.SetJobAsFavoriteAction;
+import org.codinjutsu.tools.jenkins.view.action.ShowLogAction;
+import org.codinjutsu.tools.jenkins.view.action.StopBuildAction;
+import org.codinjutsu.tools.jenkins.view.action.UnsetJobAsFavoriteAction;
+import org.codinjutsu.tools.jenkins.view.action.UploadPatchToJob;
+import org.codinjutsu.tools.jenkins.view.action.settings.SortByStatusAction;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.actionSystem.ActionManager;
 import com.intellij.openapi.actionSystem.DefaultActionGroup;
@@ -32,35 +85,7 @@ import com.intellij.ui.ScrollPaneFactory;
 import com.intellij.ui.TreeSpeedSearch;
 import com.intellij.ui.treeStructure.SimpleTree;
 import com.intellij.ui.treeStructure.Tree;
-import com.intellij.util.containers.Convertor;
 import com.intellij.util.ui.tree.TreeUtil;
-import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
-import org.codinjutsu.tools.jenkins.JenkinsAppSettings;
-import org.codinjutsu.tools.jenkins.JenkinsSettings;
-import org.codinjutsu.tools.jenkins.JenkinsWindowManager;
-import org.codinjutsu.tools.jenkins.exception.ConfigurationException;
-import org.codinjutsu.tools.jenkins.logic.*;
-import org.codinjutsu.tools.jenkins.model.*;
-import org.codinjutsu.tools.jenkins.util.GuiUtil;
-import org.codinjutsu.tools.jenkins.view.action.*;
-import org.codinjutsu.tools.jenkins.view.action.settings.SortByStatusAction;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-
-import javax.swing.*;
-import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.DefaultTreeModel;
-import javax.swing.tree.TreeNode;
-import javax.swing.tree.TreePath;
-import java.awt.*;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 
 public class BrowserPanel extends SimpleToolWindowPanel implements Disposable {
 
@@ -91,25 +116,20 @@ public class BrowserPanel extends SimpleToolWindowPanel implements Disposable {
     private FavoriteView favoriteView;
     private View currentSelectedView;
 
-    private final Map<String, Job> watchedJobs = new ConcurrentHashMap<String, Job>();
+    private final Map<String, Job> watchedJobs = new ConcurrentHashMap<>();
 
-    private static final Comparator<DefaultMutableTreeNode> sortByStatusComparator = new Comparator<DefaultMutableTreeNode>() {
-        @Override
-        public int compare(DefaultMutableTreeNode treeNode1, DefaultMutableTreeNode treeNode2) {
-            Job job1 = ((Job) treeNode1.getUserObject());
-            Job job2 = ((Job) treeNode2.getUserObject());
+    private static final Comparator<DefaultMutableTreeNode> sortByStatusComparator = (treeNode1, treeNode2) -> {
+        Job job1 = ((Job) treeNode1.getUserObject());
+        Job job2 = ((Job) treeNode2.getUserObject());
 
-            return new Integer(BuildStatusEnum.getStatus(job1.getColor()).ordinal()).compareTo(BuildStatusEnum.getStatus(job2.getColor()).ordinal());
-        }
+        return Integer.compare(BuildStatusEnum.getStatus(job1.getColor()).ordinal(), BuildStatusEnum.getStatus(job2.getColor()).ordinal());
     };
-    private static final Comparator<DefaultMutableTreeNode> sortByNameComparator = new Comparator<DefaultMutableTreeNode>() {
-        @Override
-        public int compare(DefaultMutableTreeNode treeNode1, DefaultMutableTreeNode treeNode2) {
-            Job job1 = ((Job) treeNode1.getUserObject());
-            Job job2 = ((Job) treeNode2.getUserObject());
+    private static final Comparator<DefaultMutableTreeNode> sortByNameComparator = (treeNode1, treeNode2) -> {
 
-            return job1.getName().compareTo(job2.getName());
-        }
+        Job job1 = ((Job) treeNode1.getUserObject());
+        Job job2 = ((Job) treeNode2.getUserObject());
+
+        return job1.getName().compareTo(job2.getName());
     };
 
 
@@ -122,12 +142,7 @@ public class BrowserPanel extends SimpleToolWindowPanel implements Disposable {
         super(true);
         this.project = project;
 
-        refreshViewJob = new Runnable() {
-            @Override
-            public void run() {
-                GuiUtil.runInSwingThread(new LoadSelectedViewJob(project));
-            }
-        };
+        refreshViewJob = () -> GuiUtil.runInSwingThread(new LoadSelectedViewJob(project));
 
         requestManager = RequestManager.getInstance(project);
         jenkinsAppSettings = JenkinsAppSettings.getSafeInstance(project);
@@ -189,7 +204,7 @@ public class BrowserPanel extends SimpleToolWindowPanel implements Disposable {
 
     public Job getJob(String name) {
         List<Job> jobs = jenkins.getJobs();
-        if (jobs.size() > 0) {
+        if (!jobs.isEmpty()) {
             for (Job job : jobs) {
                 if (job.getName().equals(name)) {
                     return job;
@@ -208,12 +223,7 @@ public class BrowserPanel extends SimpleToolWindowPanel implements Disposable {
             TreeUtil.sort(model, sortByNameComparator);
         }
 
-        GuiUtil.runInSwingThread(new Runnable() {
-            @Override
-            public void run() {
-                model.nodeStructureChanged((TreeNode) model.getRoot());
-            }
-        });
+        GuiUtil.runInSwingThread(() -> model.nodeStructureChanged((TreeNode) model.getRoot()));
     }
 
     @Override
@@ -279,7 +289,7 @@ public class BrowserPanel extends SimpleToolWindowPanel implements Disposable {
         if (!SwingUtilities.isEventDispatchThread()) {
             logger.warn("BrowserPanel.loadJob called from outside of EDT");
         }
-        GuiUtil.runInSwingThread(new Task.Backgroundable(project, "Loading job", true, JenkinsLoadingTaskOption.INSTANCE) {
+        GuiUtil.runInSwingThread(new Task.Backgroundable(project, "Loading Job", true, JenkinsLoadingTaskOption.INSTANCE) {
 
             private Job returnJob;
 
@@ -332,12 +342,7 @@ public class BrowserPanel extends SimpleToolWindowPanel implements Disposable {
     }
 
     public void notifyErrorJenkinsToolWindow(final String message) {
-        GuiUtil.runInSwingThread(new Runnable() {
-            @Override
-            public void run() {
-                ToolWindowManager.getInstance(project).notifyByBalloon(JenkinsWindowManager.JENKINS_BROWSER, MessageType.ERROR, message);
-            }
-        });
+        GuiUtil.runInSwingThread(() -> ToolWindowManager.getInstance(project).notifyByBalloon(JenkinsWindowManager.JENKINS_BROWSER, MessageType.ERROR, message));
     }
 
     private Tree createTree(final List<JenkinsSettings.FavoriteJob> favoriteJobs) {
@@ -348,17 +353,13 @@ public class BrowserPanel extends SimpleToolWindowPanel implements Disposable {
         tree.setName("jobTree");
         tree.setModel(new DefaultTreeModel(new DefaultMutableTreeNode(jenkins)));
 
-        new TreeSpeedSearch(tree, new Convertor<TreePath, String>() {
-
-            @Override
-            public String convert(TreePath treePath) {
-                final DefaultMutableTreeNode node = (DefaultMutableTreeNode) treePath.getLastPathComponent();
-                final Object userObject = node.getUserObject();
-                if (userObject instanceof Job) {
-                    return ((Job) userObject).getName();
-                }
-                return "<empty>";
+        new TreeSpeedSearch(tree, treePath -> {
+            final DefaultMutableTreeNode node = (DefaultMutableTreeNode) treePath.getLastPathComponent();
+            final Object userObject = node.getUserObject();
+            if (userObject instanceof Job) {
+                return ((Job) userObject).getName();
             }
+            return "<empty>";
         });
 
         return tree;
@@ -559,12 +560,7 @@ public class BrowserPanel extends SimpleToolWindowPanel implements Disposable {
     }
 
     private void setTreeBusy(final boolean isBusy) {
-        GuiUtil.runInSwingThread(new Runnable() {
-            @Override
-            public void run() {
-                jobTree.setPaintBusy(isBusy);
-            }
-        });
+        GuiUtil.runInSwingThread(() -> jobTree.setPaintBusy(isBusy));
 
     }
 
@@ -578,6 +574,7 @@ public class BrowserPanel extends SimpleToolWindowPanel implements Disposable {
 
 
     private class LoadSelectedViewJob extends Task.Backgroundable {
+
         public LoadSelectedViewJob(@Nullable Project project) {
             super(project, "Loading Jenkins Jobs", true, JenkinsLoadingTaskOption.INSTANCE);
         }
@@ -605,12 +602,9 @@ public class BrowserPanel extends SimpleToolWindowPanel implements Disposable {
         public void onSuccess() {
             final BuildStatusAggregator buildStatusAggregator = new BuildStatusAggregator(jenkins.getJobs().size());
 
-            GuiUtil.runInSwingThread(new Runnable() {
-                @Override
-                public void run() {
-                    fillJobTree(buildStatusAggregator);
-                    JenkinsWidget.getInstance(project).updateStatusIcon(buildStatusAggregator);
-                }
+            GuiUtil.runInSwingThread(() -> {
+                fillJobTree(buildStatusAggregator);
+                JenkinsWidget.getInstance(project).updateStatusIcon(buildStatusAggregator);
             });
 
         }
@@ -632,7 +626,7 @@ public class BrowserPanel extends SimpleToolWindowPanel implements Disposable {
             for (final Map.Entry<String, Job> entry : watchedJobs.entrySet()) {
                 final Job job = entry.getValue();
                 final Build lastBuild = job.getLastBuild();
-                new Task.Backgroundable(project, "Jenkins build watch", true, JenkinsLoadingTaskOption.INSTANCE) {
+                new Task.Backgroundable(project, "Jenkins Build Watch", true, JenkinsLoadingTaskOption.INSTANCE) {
 
                     private Build build;
 

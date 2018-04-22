@@ -16,6 +16,14 @@
 
 package org.codinjutsu.tools.jenkins.logic;
 
+import static java.util.Arrays.*;
+import static org.codinjutsu.tools.jenkins.model.BuildStatusEnum.*;
+import static org.unitils.reflectionassert.ReflectionAssert.*;
+
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
+
 import org.codinjutsu.tools.jenkins.model.Jenkins;
 import org.codinjutsu.tools.jenkins.model.Job;
 import org.codinjutsu.tools.jenkins.model.View;
@@ -23,15 +31,6 @@ import org.codinjutsu.tools.jenkins.util.IOUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.MockitoAnnotations;
-
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.List;
-
-import static java.util.Arrays.asList;
-import static org.codinjutsu.tools.jenkins.model.BuildStatusEnum.FAILURE;
-import static org.codinjutsu.tools.jenkins.model.BuildStatusEnum.SUCCESS;
-import static org.unitils.reflectionassert.ReflectionAssert.assertReflectionEquals;
 
 public class JenkinsJsonParserTest {
 
@@ -208,9 +207,12 @@ public class JenkinsJsonParserTest {
 
         List<Job> expectedJobs = Arrays.asList(
                 new JobBuilder()
-                        .job("DummyProject", "Dummy Project", "red", "http://localhost:8484/jenkins/job/DummyProject/", "false", "true")
-                        .lastBuild("http://localhost:8484/jenkins/job/DummyProject/26/", "26", "FAILURE", "false", "2011-12-01_16-53-48", 1477640156281l, 4386421l)
-                        .health("health-00to19", "Stabilité du build: Tous les builds récents ont échoué.")
+                        .job("DummyProject", "Dummy Project", "red",
+                              "http://localhost:8484/jenkins/job/DummyProject/", "false", "true")
+                        .lastBuild("http://localhost:8484/jenkins/job/DummyProject/26/", "26",
+                              "FAILURE", "false", "2011-12-01_16-53-48",
+                              1477640156281l, 4386421l)
+                        .health("health-00to19", "Stabilit\u00e9 du build: Tous les builds r\u00e9cents ont \u00e9chou\u00e9.")
                         .parameter("runIntegrationTest", "BooleanParameterDefinition", "true")
                         .parameter("environment", "ChoiceParameterDefinition", "itg", "itg", "prp", "prd", "bench")
                         .parameter("tag", "StringParameterDefinition", "")

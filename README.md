@@ -6,6 +6,7 @@
 ### Current builds
 * [Idea 15](https://github.com/dboissier/jenkins-control-plugin/raw/master/snapshot/jenkins-control-plugin-0.10.15-distribution.zip)
 * [Idea 2016](https://github.com/dboissier/jenkins-control-plugin/raw/master/snapshot/jenkins-control-plugin-0.10.2016-distribution.zip)
+* [Idea 2018](https://github.com/dboissier/jenkins-control-plugin/raw/master/snapshot/jenkins-control-plugin-0.10.2018-distribution.zip)
 
 
 ## Description

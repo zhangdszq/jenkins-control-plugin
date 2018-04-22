@@ -1,13 +1,11 @@
 package org.codinjutsu.tools.jenkins.util;
 
-import org.hamcrest.CoreMatchers;
-import org.junit.Test;
+import static org.junit.Assert.*;
 
-import java.io.File;
 import java.io.InputStream;
 
-
-import static org.junit.Assert.*;
+import org.hamcrest.CoreMatchers;
+import org.junit.Test;
 
 /**
  * Created by Cezary on 2015-10-18.
@@ -15,8 +13,8 @@ import static org.junit.Assert.*;
 public class IOUtilsTest {
 
     public static final char SEPARATOR = '/';
-    private String POLISH_TEST_STRING = "zażółć gęślą jaźń\n" +
-            "ZAŻÓŁĆ GĘŚLĄ JAŹŃ";
+    private String POLISH_TEST_STRING = "\u007a\u0061\u017c\u00f3\u0142\u0107 \u0067\u0119\u015b\u006c\u0105 \u006a\u0061\u017a\u0144\u005c\u0072\u005c\u006e" +
+          "\u005a\u0041\u017b\u00d3\u0141\u0106 \u0047\u0118\u015a\u004c\u0104 \u004a\u0041\u0179\u0143";
 
     @Test
     public void testToStringUTF8() throws Exception {

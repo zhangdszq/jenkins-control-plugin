@@ -16,6 +16,9 @@
 
 package org.codinjutsu.tools.jenkins.view.action.results;
 
+import org.codinjutsu.tools.jenkins.model.Job;
+import org.jetbrains.annotations.NotNull;
+
 import com.intellij.execution.Executor;
 import com.intellij.execution.configurations.RunProfile;
 import com.intellij.execution.process.ProcessHandler;
@@ -26,8 +29,6 @@ import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.util.config.Storage;
-import org.codinjutsu.tools.jenkins.model.Job;
-import org.jetbrains.annotations.NotNull;
 
 public class JobTestConsoleProperties extends TestConsoleProperties implements SMCustomMessagesParsing {
     private final RunProfile configuration;
@@ -35,7 +36,7 @@ public class JobTestConsoleProperties extends TestConsoleProperties implements S
     private final Job job;
 
     public JobTestConsoleProperties(Job job, Project project, Executor executor, RunProfile configuration, ProcessHandler processHandler) {
-        super(new Storage.PropertiesComponentStorage("Jenkins.", PropertiesComponent.getInstance()), project, executor);
+        super(new  Storage.PropertiesComponentStorage("Jenkins.", PropertiesComponent.getInstance()), project, executor);
         this.job = job;
         this.configuration = configuration;
         this.processHandler = processHandler;

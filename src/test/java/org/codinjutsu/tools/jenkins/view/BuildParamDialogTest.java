@@ -16,10 +16,20 @@
 
 package org.codinjutsu.tools.jenkins.view;
 
+import static junit.framework.Assert.assertTrue;
+import static org.codinjutsu.tools.jenkins.model.JobParameter.JobParameterType.*;
+import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.*;
+
+import java.util.Arrays;
+import java.util.Map;
+
 import org.codinjutsu.tools.jenkins.JenkinsAppSettings;
 import org.codinjutsu.tools.jenkins.logic.JobBuilder;
 import org.codinjutsu.tools.jenkins.logic.RequestManager;
 import org.codinjutsu.tools.jenkins.model.Job;
+import org.fest.swing.core.BasicRobot;
+import org.fest.swing.core.Robot;
 import org.fest.swing.core.matcher.JButtonMatcher;
 import org.fest.swing.core.matcher.JLabelMatcher;
 import org.fest.swing.core.matcher.JTextComponentMatcher;
@@ -28,19 +38,10 @@ import org.fest.swing.edt.GuiQuery;
 import org.fest.swing.fixture.DialogFixture;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-
-import java.util.Arrays;
-import java.util.Map;
-
-import static junit.framework.Assert.assertTrue;
-import static org.codinjutsu.tools.jenkins.model.JobParameter.JobParameterType.*;
-import static org.junit.Assert.assertEquals;
-import static org.mockito.Mockito.*;
 
 public class BuildParamDialogTest {
 
@@ -51,6 +52,8 @@ public class BuildParamDialogTest {
     private BuildParamDialog.RunBuildCallback callbackRun;
 
     private JenkinsAppSettings configuration;
+
+    public Robot robot;
 
     private static final Job JOB_WITH_GOOD_PARAMS =
             new JobBuilder()
@@ -80,13 +83,18 @@ public class BuildParamDialogTest {
 
     @After
     public void tearDown() {
-        dialogFixture.cleanUp();
+        try {
+            dialogFixture.cleanUp();
+        } finally {
+            robot.cleanUp();
+        }
     }
 
     @Before
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
         configuration = new JenkinsAppSettings();
+        robot = BasicRobot.robotWithNewAwtHierarchy();
     }
 
     private void createDialog(final Job job) {
@@ -96,12 +104,12 @@ public class BuildParamDialogTest {
             }
         });
 
-        dialogFixture = new DialogFixture(buildParamDialog);
+        dialogFixture = new DialogFixture(robot, buildParamDialog);
         dialogFixture.show();
     }
 
     @Test
-    @Ignore(value = "Issue in maven compilation :(")
+    //@Ignore(value = "Issue in maven compilation :(")
     public void displaySimpleJob() throws Exception {
         createDialog(JOB_WITH_GOOD_PARAMS);
 
@@ -124,11 +132,11 @@ public class BuildParamDialogTest {
     }
 
     @Test
-    @Ignore(value = "Intellij component dependency, need to mock it")
+    //@Ignore(value = "Intellij component dependency, need to mock it")
     public void testLaunchBuild() throws Exception {
         createDialog(JOB_WITH_GOOD_PARAMS);
 
-        dialogFixture.checkBox("integrationTest").uncheck();
+        dialogFixture.checkBox("integrationTest").deselect();
         dialogFixture.comboBox("environment").selectItem("acceptance");
 
         dialogFixture.button(JButtonMatcher.withText("OK")).click();
