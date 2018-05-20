@@ -16,7 +16,14 @@
 
 package org.codinjutsu.tools.jenkins.view;
 
+import com.intellij.dvcs.DvcsUtil;
+import com.intellij.dvcs.repo.Repository;
+import com.intellij.dvcs.repo.VcsRepositoryManager;
+import com.intellij.openapi.project.Project;
+import com.intellij.openapi.components.ServiceManager;
+import com.intellij.openapi.project.ProjectManager;
 import com.intellij.openapi.ui.ComboBox;
+import com.intellij.openapi.vfs.VirtualFile;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
@@ -158,6 +165,9 @@ public class BuildParamDialog extends JDialog {
         String defaultValue = jobParameter.getDefaultValue();
         JComponent inputField;
 
+//        if(jobParameter.getName().equals("Branch")){
+//            inputField = createBranchSelectBox("");
+//        } else
         if (JobParameter.JobParameterType.ChoiceParameterDefinition.equals(jobParameterType)) {
             inputField = createComboBox(jobParameter, defaultValue);
         } else if (JobParameter.JobParameterType.BooleanParameterDefinition.equals(jobParameterType)) {
@@ -246,6 +256,18 @@ public class BuildParamDialog extends JDialog {
             comboBox.setSelectedItem(defaultValue);
         }
         return comboBox;
+    }
+
+    private JTextField createBranchSelectBox(String defaultValue) {
+        JTextField branches = new JTextField();
+        ProjectManager projectManager = ProjectManager.getInstance();
+        Project[] projects = projectManager.getOpenProjects();
+        VcsRepositoryManager vcs = ServiceManager.getService(projects[0], VcsRepositoryManager.class);
+        VirtualFile selectedFile = DvcsUtil.getSelectedFile(projects[0]);
+        Repository repository = vcs.getRepositoryForFile(selectedFile);
+        String branchName = repository.getCurrentBranchName();
+        branches.setText(branchName);
+        return branches;
     }
 
     private Map<String, String> getParamValueMap() {//TODO transformer en visiteur
