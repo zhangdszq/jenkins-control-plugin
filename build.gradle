@@ -1,8 +1,18 @@
+buildscript {
+    repositories {
+        jcenter()
+    }
+    dependencies {
+        classpath 'com.github.jengelman.gradle.plugins:shadow:2.0.1'
+    }
+}
+
 plugins {
     id "org.jetbrains.intellij" version "0.3.1"
 }
 
 apply plugin: 'org.jetbrains.intellij'
+apply plugin: 'com.github.johnrengelman.shadow'
 
 intellij {
     version '2018.1'
