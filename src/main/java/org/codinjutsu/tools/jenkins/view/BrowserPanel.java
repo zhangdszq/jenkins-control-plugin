@@ -318,12 +318,12 @@ public class BrowserPanel extends SimpleToolWindowPanel implements Disposable {
     }
 
     public void notifyInfoJenkinsToolWindow(final String htmlLinkMessage) {
-        ToolWindowManager.getInstance(project).notifyByBalloon(
+        GuiUtil.runInSwingThread(() -> ToolWindowManager.getInstance(project).notifyByBalloon(
                 JenkinsWindowManager.JENKINS_BROWSER,
                 MessageType.INFO,
                 htmlLinkMessage,
                 null,
-                new BrowserHyperlinkListener());
+                new BrowserHyperlinkListener()));
     }
 
     public void notifyErrorJenkinsToolWindow(final String message) {
