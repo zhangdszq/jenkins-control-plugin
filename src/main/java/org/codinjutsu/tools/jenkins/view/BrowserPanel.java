@@ -404,7 +404,7 @@ public class BrowserPanel extends SimpleToolWindowPanel implements Disposable {
         actionGroup.add(new RefreshNodeAction(this));
         actionGroup.add(new LoadBuildsAction(this));
         actionGroup.add(new RunBuildAction(this));
-        actionGroup.add(new BuildCurrentBranch(this));
+        //actionGroup.add(new BuildCurrentBranch(this));
         actionGroup.add(new StopBuildAction(this));
         actionGroup.add(new SortByStatusAction(this));
         actionGroup.add(new RefreshRssAction());
