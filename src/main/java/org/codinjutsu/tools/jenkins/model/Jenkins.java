@@ -16,16 +16,22 @@
 
 package org.codinjutsu.tools.jenkins.model;
 
+import com.intellij.openapi.project.Project;
+import com.intellij.openapi.project.ProjectManager;
 import org.apache.commons.lang.StringUtils;
 import org.codinjutsu.tools.jenkins.JenkinsAppSettings;
 
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.function.Consumer;
+import java.util.regex.Pattern;
 
 public class Jenkins {
 
     private String name;
     private String serverUrl;
+    private JenkinsAppSettings settings;
 
     private List<Job> jobs;
 
@@ -42,10 +48,30 @@ public class Jenkins {
         this.serverUrl = serverUrl;
         this.jobs = new LinkedList<Job>();
         this.views = new LinkedList<View>();
+        try {
+            Project[] projects = ProjectManager.getInstance().getOpenProjects();
+            if (projects.length > 0) {
+                settings = JenkinsAppSettings.getSafeInstance(projects[0]);
+            }
+        } catch (Exception exception){
+        }
     }
 
 
-    public void setJobs(List<Job> jobs) {
+    public void setJobs(List<Job> jobs, Boolean ignoreFilter) {
+        if (!ignoreFilter && settings != null) {
+            String filter = settings.getJobsFilterPattern();
+            if (!filter.isEmpty()) {
+                LinkedList<Job> newJobs = new LinkedList<Job>();
+                for (Job job : jobs) {
+                    if (job.getName().matches(filter)) {
+                        newJobs.add(job);
+                        System.out.println(job.getName() + " " + filter);
+                    }
+                }
+                jobs = newJobs;
+            }
+        }
         this.jobs = jobs;
     }
 

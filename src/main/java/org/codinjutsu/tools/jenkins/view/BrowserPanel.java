@@ -466,7 +466,7 @@ public class BrowserPanel extends SimpleToolWindowPanel implements Disposable {
 
         jenkinsSettings.setLastSelectedView(currentSelectedView.getName());
 
-        jenkins.setJobs(jobList);
+        jenkins.setJobs(jobList, currentSelectedView instanceof FavoriteView);
     }
 
     private View getViewToLoad() {

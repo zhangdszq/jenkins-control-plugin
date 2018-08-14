@@ -163,7 +163,11 @@ public class JenkinsJsonParser implements JenkinsParser {
 
         Build build = new Build();
         String buildDate = (String) lastBuildObject.get(BUILD_ID);
-        build.setBuildDate(buildDate);
+        if (buildDate.matches("^[0-9]+$")) {
+            build.setBuildDate((Long) lastBuildObject.get(BUILD_TIMESTAMP));
+        } else {
+            build.setBuildDate(buildDate);
+        }
         final boolean building = getBoolean(lastBuildObject.get(BUILD_IS_BUILDING));
         build.setBuilding(building);
         Long number = (Long) lastBuildObject.get(BUILD_NUMBER);

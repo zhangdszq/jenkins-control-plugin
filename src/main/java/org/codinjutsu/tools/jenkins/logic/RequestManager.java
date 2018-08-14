@@ -55,7 +55,7 @@ public class RequestManager implements RequestManagerInterface {
 
     private RssParser rssParser = new RssParser();
 
-    private JenkinsParser jsonParser = new JenkinsJsonParser();
+    private final JenkinsParser jsonParser;
     private JenkinsServer jenkinsServer;
 
     public static RequestManager getInstance(Project project) {
@@ -65,11 +65,13 @@ public class RequestManager implements RequestManagerInterface {
 
     public RequestManager(Project project) {
         this.urlBuilder = UrlBuilder.getInstance(project);
+        this.jsonParser = new JenkinsJsonParser();
     }
 
     RequestManager(UrlBuilder urlBuilder, SecurityClient securityClient) {
         this.urlBuilder = urlBuilder;
         this.securityClient = securityClient;
+        this.jsonParser = new JenkinsJsonParser();
     }
 
     @Override

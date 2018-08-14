@@ -19,6 +19,7 @@ package org.codinjutsu.tools.jenkins.view.action;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.progress.ProgressIndicator;
+import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.Project;
@@ -34,6 +35,7 @@ import org.codinjutsu.tools.jenkins.view.BuildParamDialog;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 public class RunBuildAction extends AnAction implements DumbAware {
@@ -57,51 +59,60 @@ public class RunBuildAction extends AnAction implements DumbAware {
 
         final BrowserPanel browserPanel = BrowserPanel.getInstance(project);
         try {
-            final Job job = browserPanel.getSelectedJob();
-            new Task.Backgroundable(project, "Running build", false) {
+            List<Job> jobs = browserPanel.getAllSelectedJobs();
+            for(Job job: jobs) {
+                Task.Backgroundable task = new Task.Backgroundable(project, "Running Build", false) {
 
-                @Override
-                public void onSuccess() {
-                    notifyOnGoingMessage(job);
-                    ExecutorService.getInstance(project).getExecutor().schedule(new Runnable() {
-                        @Override
-                        public void run() {
-                            GuiUtil.runInSwingThread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    final Job newJob = browserPanel.getJob(job.getName());
-                                    browserPanel.loadJob(newJob);
-                                }
-                            });
-                        }
-                    }, BUILD_STATUS_UPDATE_DELAY, TimeUnit.SECONDS); //FIXME check delay coud be in settings
-
-                }
-
-                @Override
-                public void run(@NotNull ProgressIndicator progressIndicator) {
-                    progressIndicator.setIndeterminate(true);
-                    RequestManager requestManager = browserPanel.getJenkinsManager();
-                    if (job.hasParameters()) {
-                        BuildParamDialog.showDialog(job, JenkinsAppSettings.getSafeInstance(project), requestManager, new BuildParamDialog.RunBuildCallback() {
-
-                            public void notifyOnOk(Job job) {
-                                notifyOnGoingMessage(job);
-                                browserPanel.loadJob(job);
+                    @Override
+                    public void onSuccess() {
+                        notifyOnGoingMessage(job);
+                        ExecutorService.getInstance(project).getExecutor().schedule(new Runnable() {
+                            @Override
+                            public void run() {
+                                GuiUtil.runInSwingThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        final Job newJob = browserPanel.getJob(job.getName());
+                                        browserPanel.loadJob(newJob);
+                                    }
+                                });
                             }
+                        }, BUILD_STATUS_UPDATE_DELAY, TimeUnit.SECONDS); //FIXME check delay cloud be in settings
 
-                            public void notifyOnError(Job job, Exception ex) {
-                                browserPanel.notifyErrorJenkinsToolWindow("Build '" + job.getName() + "' cannot be run: " + ex.getMessage());
-                                browserPanel.loadJob(job);
-                            }
-
-                        });
-
-                    } else {
-                        requestManager.runBuild(job, JenkinsAppSettings.getSafeInstance(project));
                     }
+
+                    @Override
+                    public void run(@NotNull ProgressIndicator progressIndicator) {
+                        progressIndicator.setIndeterminate(true);
+                        RequestManager requestManager = browserPanel.getJenkinsManager();
+                        if (job.hasParameters()) {
+                            BuildParamDialog.showDialog(job, JenkinsAppSettings.getSafeInstance(project), requestManager, new BuildParamDialog.RunBuildCallback() {
+
+                                public void notifyOnOk(Job job) {
+                                    notifyOnGoingMessage(job);
+                                    browserPanel.loadJob(job);
+                                }
+
+                                public void notifyOnError(Job job, Exception ex) {
+                                    browserPanel.notifyErrorJenkinsToolWindow("Build '" + job.getName() + "' cannot be run: " + ex.getMessage());
+                                    browserPanel.loadJob(job);
+                                }
+
+                            });
+
+                        } else {
+                            requestManager.runBuild(job, JenkinsAppSettings.getSafeInstance(project));
+                        }
+                    }
+                };
+
+                if (SwingUtilities.isEventDispatchThread()) {
+                    ProgressManager.getInstance().run(task);
+                } else {
+                    // Run the scan task when the thread is in the foreground.
+                    SwingUtilities.invokeLater(() -> ProgressManager.getInstance().run(task));
                 }
-            }.queue();
+            }
 
         } catch (Exception ex) {
             LOG.error(ex.getMessage(), ex);

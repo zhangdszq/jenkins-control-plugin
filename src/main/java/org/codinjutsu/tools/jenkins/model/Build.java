@@ -139,6 +139,12 @@ public class Build {
         this.buildDate = DateUtil.parseDate(buildDate, DateUtil.WORKSPACE_DATE_FORMAT);
     }
 
+    public void setBuildDate(Long buildDate) {
+        if (buildDate != null) {
+            this.buildDate = new Date(buildDate);
+        }
+    }
+
     public Date getTimestamp() {
         return timestamp;
     }

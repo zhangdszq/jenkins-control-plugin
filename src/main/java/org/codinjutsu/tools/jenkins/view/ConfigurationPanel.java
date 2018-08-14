@@ -80,6 +80,7 @@ public class ConfigurationPanel {
     private JTextField replaceWithSuffix;
     private JRadioButton version1RadioButton;
     private JRadioButton version2RadioButton;
+    private JTextField jobFilterRE;
 
     private final FormValidator formValidator;
 
@@ -89,6 +90,7 @@ public class ConfigurationPanel {
 
         serverUrl.setName("serverUrl");
         buildDelay.setName("buildDelay");
+        jobFilterRE.setName("jobFilterRE");
         jobRefreshPeriod.setName("jobRefreshPeriod");
         rssRefreshPeriod.setName("rssRefreshPeriod");
         username.setName("_username_");
@@ -187,7 +189,8 @@ public class ConfigurationPanel {
 
         boolean statusToIgnoreModified = successOrStableCheckBox.isSelected() != jenkinsAppSettings.shouldDisplaySuccessOrStable()
                 || unstableOrFailCheckBox.isSelected() != jenkinsAppSettings.shouldDisplayFailOrUnstable()
-                || abortedCheckBox.isSelected() != jenkinsAppSettings.shouldDisplayAborted();
+                || abortedCheckBox.isSelected() != jenkinsAppSettings.shouldDisplayAborted()
+                || !(jenkinsAppSettings.getJobsFilterPattern().equals(jobFilterRE.getText()));
 
         return !jenkinsAppSettings.getServerUrl().equals(serverUrl.getText())
                 || !(jenkinsAppSettings.getBuildDelay() == getBuildDelay())
@@ -234,6 +237,7 @@ public class ConfigurationPanel {
         } else {
             jenkinsSettings.setVersion(JenkinsVersion.VERSION_2);
         }
+        jenkinsAppSettings.setJobsFilterRegexp(jobFilterRE.getText());
     }
 
     public void loadConfigurationData(JenkinsAppSettings jenkinsAppSettings, JenkinsSettings jenkinsSettings) {
@@ -265,6 +269,7 @@ public class ConfigurationPanel {
             version1RadioButton.setSelected(false);
             version2RadioButton.setSelected(true);
         }
+        jobFilterRE.setText(jenkinsAppSettings.getJobsFilterPattern());
     }
 
     private boolean isPasswordModified() {
@@ -276,7 +281,7 @@ public class ConfigurationPanel {
         HTMLDocument htmlDocument = new HTMLDocument();
 
         debugTextPane.setEditable(false);
-        debugTextPane.setBackground(Color.WHITE);
+        debugTextPane.setBackground(JBColor.WHITE);
         debugTextPane.setEditorKit(htmlEditorKit);
         htmlEditorKit.install(debugTextPane);
         debugTextPane.setDocument(htmlDocument);

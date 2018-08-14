@@ -15,9 +15,10 @@ apply plugin: 'org.jetbrains.intellij'
 apply plugin: 'com.github.johnrengelman.shadow'
 
 intellij {
-    version '2018.1'
+    version '2018.2'
     updateSinceUntilBuild false
     pluginName 'jenkins-control-plugin'
+    alternativeIdePath '/Applications/PhpStorm.app'
 }
 
 configurations {

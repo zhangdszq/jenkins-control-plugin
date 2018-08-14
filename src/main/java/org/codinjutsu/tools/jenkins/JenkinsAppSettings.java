@@ -26,6 +26,9 @@ import com.intellij.openapi.components.State;
 import com.intellij.openapi.components.Storage;
 import com.intellij.openapi.project.Project;
 import com.intellij.util.xmlb.XmlSerializerUtil;
+import org.codinjutsu.tools.jenkins.model.Jenkins;
+
+import java.util.regex.Pattern;
 
 @State(
         name = "Jenkins.Application.Settings",
@@ -75,6 +78,9 @@ public class JenkinsAppSettings implements PersistentStateComponent<JenkinsAppSe
     public int getBuildDelay() {
         return myState.delay;
     }
+
+    public String getJobsFilterPattern(){ return myState.filterRegexp; }
+    public void setJobsFilterRegexp(String regexp) { myState.filterRegexp = regexp; }
 
 
     public void setDelay(int delay) {
@@ -154,6 +160,7 @@ public class JenkinsAppSettings implements PersistentStateComponent<JenkinsAppSe
         public int jobRefreshPeriod = RESET_PERIOD_VALUE;
         public int rssRefreshPeriod = RESET_PERIOD_VALUE;
         public String suffix = "";
+        public String filterRegexp = "";
 
         public RssSettings rssSettings = new RssSettings();
     }

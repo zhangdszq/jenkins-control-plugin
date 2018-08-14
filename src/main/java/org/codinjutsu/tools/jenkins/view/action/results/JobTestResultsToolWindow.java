@@ -55,8 +55,8 @@ public class JobTestResultsToolWindow {
     }
 
     public void showMavenToolWindow() {
-        ConfigurationType configurationType = new UnknownConfigurationType();
-        ConfigurationFactory configurationFactory = new ConfigurationFactoryEx<UnknownRunConfiguration>(configurationType) {
+        ConfigurationFactory configurationType = UnknownConfigurationType.getFactory();
+        ConfigurationFactory configurationFactory = new ConfigurationFactoryEx<UnknownRunConfiguration>(configurationType.getType()) {
             @NotNull
             @Override
             public RunConfiguration createTemplateConfiguration(@NotNull Project project) {

@@ -13,7 +13,7 @@ import org.junit.Test;
 public class IOUtilsTest {
 
     public static final char SEPARATOR = '/';
-    private String POLISH_TEST_STRING = "\u007a\u0061\u017c\u00f3\u0142\u0107 \u0067\u0119\u015b\u006c\u0105 \u006a\u0061\u017a\u0144\u005c\u0072\u005c\u006e" +
+    private String POLISH_TEST_STRING = "\u007a\u0061\u017c\u00f3\u0142\u0107 \u0067\u0119\u015b\u006c\u0105 \u006a\u0061\u017a\u0144\u005c\u006e" +
           "\u005a\u0041\u017b\u00d3\u0141\u0106 \u0047\u0118\u015a\u004c\u0104 \u004a\u0041\u0179\u0143";
 
     @Test
