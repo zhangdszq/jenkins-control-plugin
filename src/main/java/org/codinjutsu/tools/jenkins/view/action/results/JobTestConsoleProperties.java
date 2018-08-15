@@ -16,6 +16,7 @@
 
 package org.codinjutsu.tools.jenkins.view.action.results;
 
+import com.intellij.util.config.StorageProperty;
 import org.codinjutsu.tools.jenkins.model.Job;
 import org.jetbrains.annotations.NotNull;
 

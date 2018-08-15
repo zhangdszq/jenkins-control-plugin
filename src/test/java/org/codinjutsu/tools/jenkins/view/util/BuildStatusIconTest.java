@@ -23,7 +23,7 @@ import org.mockito.Mockito;
 
 import javax.swing.*;
 
-import static junit.framework.Assert.assertEquals;
+import static org.junit.Assert.assertEquals;
 
 
 public class BuildStatusIconTest {

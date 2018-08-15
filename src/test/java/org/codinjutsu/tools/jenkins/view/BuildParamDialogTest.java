@@ -16,9 +16,9 @@
 
 package org.codinjutsu.tools.jenkins.view;
 
-import static junit.framework.Assert.assertTrue;
 import static org.codinjutsu.tools.jenkins.model.JobParameter.JobParameterType.*;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.*;
 
 import java.util.Arrays;
@@ -162,11 +162,11 @@ public class BuildParamDialogTest {
     }
 
     @Test
-    public void unknowParams() throws Exception {
+    public void unknownParams() throws Exception {
         createDialog(JOB_WITH_UNKNOWN_PARAMS);
 
         dialogFixture.label(JLabelMatcher.withName("run"))
-                .requireText("Unkown parameter");
+                .requireText("Unknown parameter");
 
         dialogFixture.button(JButtonMatcher.withText("OK")).requireDisabled();
     }

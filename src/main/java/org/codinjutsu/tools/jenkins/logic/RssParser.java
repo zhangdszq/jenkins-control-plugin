@@ -25,7 +25,10 @@ import org.codinjutsu.tools.jenkins.util.RssUtil;
 import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.JDOMException;
+import org.jdom.JDOMFactory;
 import org.jdom.input.SAXBuilder;
+import org.jdom.input.sax.SAXHandlerFactory;
+import org.jdom.input.sax.XMLReaders;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -59,7 +62,7 @@ public class RssParser {
         }
 
         try(Reader jenkinsDataReader = new StringReader(xmlData)) {
-            return new SAXBuilder(false).build(jenkinsDataReader);
+            return new SAXBuilder(XMLReaders.NONVALIDATING, (SAXHandlerFactory)null, (JDOMFactory)null).build(jenkinsDataReader);
         } catch (JDOMException e) {
             LOG.error("Invalid data received from the Jenkins Server. Actual :\n" + xmlData, e);
             throw new RuntimeException("Invalid data received from the Jenkins Server. Please retry");
