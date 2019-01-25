@@ -1,6 +1,6 @@
 <idea-plugin>
-    <name>Jenkins Control Plugin</name>
-    <description>A Jenkins Plugin for Intellij</description>
+    <name>Jenkins Control Plugin-zxw</name>
+    <description>A Jenkins Plugin for Intellij forked</description>
     <version>2.0</version>
     <vendor email="david.boissier [at] gmail [dot] com" url="http://codinjutsu.blogspot.com">
         Programisci.eu
@@ -9,6 +9,8 @@
         cod1k
     </vendor>
     <idea-version since-build="181.4203.550"/>
+    <!--<idea-version since-build="163.0" until-build="201.4203.550"/>-->
+
     <!--<idea-version since-build="143.0" until-build="143.9999"/>-->
 
     <depends>com.intellij.modules.lang</depends>

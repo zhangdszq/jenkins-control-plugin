@@ -100,8 +100,21 @@ public class BuildParamDialog extends JDialog {
         List<JobParameter> parameters = job.getParameters();
 
         for (JobParameter jobParameter : parameters) {
-            JComponent inputField = createInputField(jobParameter);
 
+            if ("config".equals(jobParameter.getName())) {
+                jobParameter.setType(JobParameter.JobParameterType.StringParameterDefinition.name());
+            } else if ("whicha".equals(jobParameter.getName())) {
+                jobParameter.setType(JobParameter.JobParameterType.StringParameterDefinition.name());
+                jobParameter.setDefaultValue("intl");
+            } else if ("target_host".equals(jobParameter.getName())) {
+                jobParameter.setType(JobParameter.JobParameterType.StringParameterDefinition.name());
+                jobParameter.setDefaultValue("default");
+            } else if ("env_group".equals(jobParameter.getName()) || "commitSha".equals(jobParameter.getName())) {
+                jobParameter.setType(JobParameter.JobParameterType.StringParameterDefinition.name());
+                jobParameter.setDefaultValue("");
+            }
+
+            JComponent inputField = createInputField(jobParameter);
             String name = jobParameter.getName();
             inputField.setName(name);
 
@@ -112,7 +125,7 @@ public class BuildParamDialog extends JDialog {
             if (StringUtils.isEmpty(name)) {
                 name = MISSING_NAME_LABEL;
                 label.setIcon(ERROR_ICON);
-                hasError = true;
+                //hasError = true;
             }
             label.setText(name + ":");
 
@@ -165,9 +178,6 @@ public class BuildParamDialog extends JDialog {
         String defaultValue = jobParameter.getDefaultValue();
         JComponent inputField;
 
-//        if(jobParameter.getName().equals("Branch")){
-//            inputField = createBranchSelectBox("");
-//        } else
         if (JobParameter.JobParameterType.ChoiceParameterDefinition.equals(jobParameterType)) {
             inputField = createComboBox(jobParameter, defaultValue);
         } else if (JobParameter.JobParameterType.BooleanParameterDefinition.equals(jobParameterType)) {
@@ -178,7 +188,7 @@ public class BuildParamDialog extends JDialog {
             inputField = createPasswordField(defaultValue);
         } else {
             inputField = createErrorLabel(jobParameterType);
-            hasError = true;
+//          hasError = true;
         }
         return inputField;
     }
